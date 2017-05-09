@@ -81,7 +81,7 @@ func TestServiceParsing(t *testing.T) {
 	}
 
 	if c := thrift.Constants["M1"]; c == nil {
-		t.Errorf("M1 constant missing")
+		t.Error("M1 constant missing")
 	} else if c.Name != "M1" {
 		t.Errorf("M1 name not M1, got '%s'", c.Name)
 	} else if v, e := c.Type.String(), "map<string,string>"; v != e {
@@ -91,12 +91,12 @@ func TestServiceParsing(t *testing.T) {
 	}
 
 	if c := thrift.Constants["S1"]; c == nil {
-		t.Errorf("S1 constant missing")
+		t.Error("S1 constant missing")
 	} else if v, e := c.Value.(string), "foo\"\tbar"; e != v {
 		t.Errorf("Excepted %s for constnat S1, got %s", strconv.Quote(e), strconv.Quote(v))
 	}
 	if c := thrift.Constants["S2"]; c == nil {
-		t.Errorf("S2 constant missing")
+		t.Error("S2 constant missing")
 	} else if v, e := c.Value.(string), "foo'\tbar"; e != v {
 		t.Errorf("Excepted %s for constnat S2, got %s", strconv.Quote(e), strconv.Quote(v))
 	}
@@ -110,7 +110,7 @@ func TestServiceParsing(t *testing.T) {
 		Value: []interface{}{int64(1), int64(2), int64(3)},
 	}
 	if c := thrift.Constants["L"]; c == nil {
-		t.Errorf("L constant missing")
+		t.Error("L constant missing")
 	} else if !reflect.DeepEqual(c, expConst) {
 		t.Errorf("Expected for L:\n%s\ngot\n%s", pprint(expConst), pprint(c))
 	}
@@ -137,7 +137,7 @@ func TestServiceParsing(t *testing.T) {
 		},
 	}
 	if s := thrift.Structs["SomeStruct"]; s == nil {
-		t.Errorf("SomeStruct missing")
+		t.Error("SomeStruct missing")
 	} else if !reflect.DeepEqual(s, expectedStruct) {
 		t.Errorf("Expected\n%s\ngot\n%s", pprint(expectedStruct), pprint(s))
 	}
@@ -184,7 +184,7 @@ func TestServiceParsing(t *testing.T) {
 		},
 	}
 	if u := thrift.Unions["myUnion"]; u == nil {
-		t.Errorf("myUnion missing")
+		t.Error("myUnion missing")
 	} else if !reflect.DeepEqual(u, expectedUnion) {
 		t.Errorf("Expected\n%s\ngot\n%s", pprint(expectedUnion), pprint(u))
 	}
@@ -192,18 +192,18 @@ func TestServiceParsing(t *testing.T) {
 	expectedEnum := &Enum{
 		Name: "Operation",
 		Values: map[string]*EnumValue{
-			"ADD": &EnumValue{
+			"ADD": {
 				Name:  "ADD",
 				Value: 1,
 			},
-			"SUBTRACT": &EnumValue{
+			"SUBTRACT": {
 				Name:  "SUBTRACT",
 				Value: 2,
 			},
 		},
 	}
 	if e := thrift.Enums["Operation"]; e == nil {
-		t.Errorf("enum Operation missing")
+		t.Error("enum Operation missing")
 	} else if !reflect.DeepEqual(e, expectedEnum) {
 		t.Errorf("Expected\n%s\ngot\n%s", pprint(expectedEnum), pprint(e))
 	}
@@ -219,17 +219,18 @@ func TestServiceParsing(t *testing.T) {
 	}
 
 	expected := map[string]*Service{
-		"ServiceNAME": &Service{
+		"ServiceNAME": {
 			Name:    "ServiceNAME",
 			Extends: "SomeBase",
 			Methods: map[string]*Method{
-				"login": &Method{
-					Name: "login",
+				"login": {
+					Name:    "login",
+					Comment: "authenticate method comment2 some other\t\t\t   comments",
 					ReturnType: &Type{
 						Name: "string",
 					},
 					Arguments: []*Field{
-						&Field{
+						{
 							ID:       1,
 							Name:     "password",
 							Optional: false,
@@ -239,7 +240,7 @@ func TestServiceParsing(t *testing.T) {
 						},
 					},
 					Exceptions: []*Field{
-						&Field{
+						{
 							ID:       1,
 							Name:     "authex",
 							Optional: true,
@@ -249,7 +250,7 @@ func TestServiceParsing(t *testing.T) {
 						},
 					},
 				},
-				"explode": &Method{
+				"explode": {
 					Name:       "explode",
 					ReturnType: nil,
 					Oneway:     true,
@@ -282,7 +283,7 @@ typedef set<string> (a1 = "v1") setT (a2="v2")
 	}
 
 	expected := map[string]*Typedef{
-		"long": &Typedef{
+		"long": {
 			Alias: "long",
 			Type: &Type{
 				Name: "i64",
@@ -294,7 +295,7 @@ typedef set<string> (a1 = "v1") setT (a2="v2")
 			},
 			Annotations: []*Annotation{{Name: "tAnn1", Value: "tv1"}},
 		},
-		"listT": &Typedef{
+		"listT": {
 			Alias: "listT",
 			Type: &Type{
 				Name:        "list",
@@ -303,7 +304,7 @@ typedef set<string> (a1 = "v1") setT (a2="v2")
 			},
 			Annotations: []*Annotation{{Name: "a2", Value: "v2"}},
 		},
-		"mapT": &Typedef{
+		"mapT": {
 			Alias: "mapT",
 			Type: &Type{
 				Name:        "map",
@@ -313,7 +314,7 @@ typedef set<string> (a1 = "v1") setT (a2="v2")
 			},
 			Annotations: []*Annotation{{Name: "a2", Value: "v2"}},
 		},
-		"setT": &Typedef{
+		"setT": {
 			Alias: "setT",
 			Type: &Type{
 				Name:        "set",
@@ -341,20 +342,20 @@ func TestParseEnumAnnotations(t *testing.T) {
 	}
 
 	expected := map[string]*Enum{
-		"E": &Enum{
+		"E": {
 			Name: "E",
 			Values: map[string]*EnumValue{
-				"ONE": &EnumValue{
+				"ONE": {
 					Name:        "ONE",
 					Value:       0,
 					Annotations: []*Annotation{{Name: "a1", Value: "v1"}},
 				},
-				"TWO": &EnumValue{
+				"TWO": {
 					Name:        "TWO",
 					Value:       2,
 					Annotations: []*Annotation{{Name: "a2", Value: "v2"}},
 				},
-				"THREE": &EnumValue{
+				"THREE": {
 					Name:        "THREE",
 					Value:       3,
 					Annotations: []*Annotation{{Name: "a3", Value: "v3"}},
@@ -379,10 +380,10 @@ func TestParseFieldAnnotations(t *testing.T) {
 	}
 
 	expected := map[string]*Struct{
-		"S": &Struct{
+		"S": {
 			Name: "S",
 			Fields: []*Field{
-				&Field{
+				{
 					ID:          1,
 					Name:        "f1",
 					Optional:    true,
@@ -419,13 +420,13 @@ func TestParseStructLikeAnnotations(t *testing.T) {
 
 	expected, _ := parse("")
 	fields := []*Field{
-		&Field{
+		{
 			ID:       1,
 			Name:     "f1",
 			Optional: true,
 			Type:     &Type{Name: "i32"},
 		},
-		&Field{
+		{
 			ID:       2,
 			Name:     "f2",
 			Optional: true,
@@ -433,21 +434,21 @@ func TestParseStructLikeAnnotations(t *testing.T) {
 		},
 	}
 	expected.Structs = map[string]*Struct{
-		"S": &Struct{
+		"S": {
 			Name:        "S",
 			Fields:      fields,
 			Annotations: []*Annotation{{Name: "a1", Value: "v1"}},
 		},
 	}
 	expected.Unions = map[string]*Struct{
-		"U": &Struct{
+		"U": {
 			Name:        "U",
 			Fields:      fields,
 			Annotations: []*Annotation{{Name: "a2", Value: "v2"}},
 		},
 	}
 	expected.Exceptions = map[string]*Struct{
-		"E": &Struct{
+		"E": {
 			Name:        "E",
 			Fields:      fields,
 			Annotations: []*Annotation{{Name: "a3", Value: "v3"}},
@@ -469,13 +470,13 @@ func TestParseServiceAnnotations(t *testing.T) {
 	}
 
 	expected := map[string]*Service{
-		"S": &Service{
+		"S": {
 			Name: "S",
 			Methods: map[string]*Method{
-				"foo": &Method{
+				"foo": {
 					Name: "foo",
 					Arguments: []*Field{
-						&Field{
+						{
 							ID:   1,
 							Name: "f1",
 							Type: &Type{Name: "i32"},
@@ -502,12 +503,12 @@ func TestParseConstant(t *testing.T) {
 	}
 
 	expected := map[string]*Constant{
-		"C1": &Constant{
+		"C1": {
 			Name:  "C1",
 			Type:  &Type{Name: "string"},
 			Value: "test",
 		},
-		"C2": &Constant{
+		"C2": {
 			Name:  "C2",
 			Type:  &Type{Name: "string"},
 			Value: Identifier("C1"),
@@ -515,6 +516,104 @@ func TestParseConstant(t *testing.T) {
 	}
 	if got := thrift.Constants; !reflect.DeepEqual(expected, got) {
 		t.Errorf("Unexpected constant parsing got\n%s\ninstead of\n%s", pprint(got), pprint(expected))
+	}
+}
+
+func TestParseComments(t *testing.T) {
+	thrift, err := parse(`
+		struct S {
+			// One line comment
+			1: optional i32 f1
+
+			/*
+			Block comment
+			*/
+			2: optional i32 f2
+
+			3: optional i32 f3  // Post comment
+
+			// Pre comment - check that previous field didn't swallow this
+			4: optional i32 f4
+		}
+
+		service T {
+			// One line comment
+			void m1()
+
+			/*
+			Block comment
+			*/
+			void m2()
+
+			void m3() /* Don't count this since it precedes annotations */ (a1="v1")  // Post comment
+
+			// Pre comment - check that previous field didn't swallow this
+			void m4()
+		}
+		`)
+	if err != nil {
+		t.Fatalf("Service parsing failed with error %s", err.Error())
+	}
+
+	expectedFields := []*Field{
+		{
+			ID:       1,
+			Name:     "f1",
+			Comment:  "One line comment",
+			Optional: true,
+			Type:     &Type{Name: "i32"},
+		},
+		{
+			ID:       2,
+			Name:     "f2",
+			Comment:  "Block comment",
+			Optional: true,
+			Type:     &Type{Name: "i32"},
+		},
+		{
+			ID:       3,
+			Name:     "f3",
+			Comment:  "Post comment",
+			Optional: true,
+			Type:     &Type{Name: "i32"},
+		},
+		{
+			ID:       4,
+			Name:     "f4",
+			Comment:  "Pre comment - check that previous field didn't swallow this",
+			Optional: true,
+			Type:     &Type{Name: "i32"},
+		},
+	}
+	if got := thrift.Structs["S"].Fields; !reflect.DeepEqual(expectedFields, got) {
+		t.Errorf("Unexpected field comment parsing got\n%s\ninstead of\n%s", pprint(got), pprint(expectedFields))
+	}
+
+	expectedMethods := map[string]*Method{
+		"m1": {
+			Name:      "m1",
+			Comment:   "One line comment",
+			Arguments: []*Field{},
+		},
+		"m2": {
+			Name:      "m2",
+			Comment:   "Block comment",
+			Arguments: []*Field{},
+		},
+		"m3": {
+			Name:        "m3",
+			Comment:     "Post comment",
+			Annotations: []*Annotation{{Name: "a1", Value: "v1"}},
+			Arguments:   []*Field{},
+		},
+		"m4": {
+			Name:      "m4",
+			Comment:   "Pre comment - check that previous field didn't swallow this",
+			Arguments: []*Field{},
+		},
+	}
+	if got := thrift.Services["T"].Methods; !reflect.DeepEqual(expectedMethods, got) {
+		t.Errorf("Unexpected method comment parsing got\n%s\ninstead of\n%s", pprint(got), pprint(expectedFields))
 	}
 }
 
@@ -542,7 +641,7 @@ func pprint(v interface{}) string {
 }
 
 func parse(contents string) (*Thrift, error) {
-	parser := &Parser{}
-	thrift, err := parser.Parse(strings.NewReader(contents))
+	p := &Parser{}
+	thrift, err := p.Parse(strings.NewReader(contents))
 	return thrift, err
 }

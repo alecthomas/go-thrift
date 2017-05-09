@@ -314,7 +314,7 @@ FieldList ← fields:(Field (Whitespace / EOL)*)* {
 	return flds, nil
 }
 
-Field ← blockComment:(_ Comment? EOL)* _ id:IntConstant _ ':' _ req:FieldReq? _ typ:FieldType _ name:Identifier __ def:('=' _ ConstValue)? _ annotations:TypeAnnotations? ListSeparator? _ comment:Comment? {
+Field ← blockComment:(_ Comment? EOL)* _ id:IntConstant _ ':' _ req:FieldReq? _ typ:FieldType _ name:Identifier def:(__ '=' _ ConstValue)? _ annotations:TypeAnnotations? ListSeparator? _ comment:Comment? {
 	f := &Field{
 		Pos      : makePos(c.pos),
 		ID       : int(id.(int64)),
@@ -326,7 +326,7 @@ Field ← blockComment:(_ Comment? EOL)* _ id:IntConstant _ ':' _ req:FieldReq? 
 		f.Optional = true
 	}
 	if def != nil {
-		f.Default = def.([]interface{})[2]
+		f.Default = def.([]interface{})[3]
 	}
 	if comment != nil {
 		f.Comment = ifaceSliceToCommentString(comment)
@@ -371,7 +371,7 @@ EndOfServiceError ← . {
 	return nil, errors.New("parser: expected end of service")
 }
 
-Function ← blockComment:(_ Comment? EOL)* _ oneway:("oneway" __)? typ:FunctionType __ name:Identifier _ '(' __ arguments:FieldList ')' __ exceptions:Throws? _ annotations:TypeAnnotations? ListSeparator? _ comment:Comment? {
+Function ← blockComment:(_ Comment? EOL)* _ oneway:("oneway" __)? typ:FunctionType __ name:Identifier _ '(' __ arguments:FieldList ')' exceptions:(__ Throws)? _ annotations:TypeAnnotations? ListSeparator? _ comment:Comment? {
 	m := &Method{
 		Pos: makePos(c.pos),
 		Name: string(name.(Identifier)),
@@ -388,7 +388,7 @@ Function ← blockComment:(_ Comment? EOL)* _ oneway:("oneway" __)? typ:Function
 		m.Arguments = arguments.([]*Field)
 	}
 	if exceptions != nil {
-		m.Exceptions = exceptions.([]*Field)
+		m.Exceptions = exceptions.([]interface{})[1].([]*Field)
 		for _, e := range m.Exceptions {
 			e.Optional = true
 		}
