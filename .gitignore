@@ -1,1 +1,12 @@
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
 .DS_Store
+
+## Bazel
+/bazel-*
+/build-support/bazel/bin/bazel-*
+/build-support/bazel/bin/bootstrapped-*
+build-support
