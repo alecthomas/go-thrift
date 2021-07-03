@@ -15,11 +15,20 @@ type Decoder interface {
 }
 
 type decoder struct {
-	r ProtocolReader
+	r                 ProtocolReader
+	decodeEmptySlices bool
 }
 
 // DecodeStruct tries to deserialize a struct from a Thrift stream
 func DecodeStruct(r ProtocolReader, v interface{}) (err error) {
+	return decodeStruct(r, v, false)
+}
+
+func DecodeStructWithEmptySlices(r ProtocolReader, v interface{}) (err error) {
+	return decodeStruct(r, v, true)
+}
+
+func decodeStruct(r ProtocolReader, v interface{}, decodeEmptySlices bool) (err error) {
 	if de, ok := v.(Decoder); ok {
 		return de.DecodeThrift(r)
 	}
@@ -32,7 +41,7 @@ func DecodeStruct(r ProtocolReader, v interface{}) (err error) {
 			err = r.(error)
 		}
 	}()
-	d := &decoder{r}
+	d := &decoder{r, decodeEmptySlices}
 	vo := reflect.ValueOf(v)
 	for vo.Kind() != reflect.Ptr {
 		d.error(&UnsupportedValueError{Value: vo, Str: "pointer to struct expected"})
@@ -205,6 +214,9 @@ func (d *decoder) readValue(thriftType byte, rf reflect.Value) {
 		if err != nil {
 			d.error(err)
 		}
+		if d.decodeEmptySlices && n == 0 {
+			v.Set(reflect.MakeSlice(v.Type(), n, n))
+		}
 		for i := 0; i < n; i++ {
 			val := reflect.New(elemType)
 			d.readValue(et, val.Elem())
@@ -219,6 +231,9 @@ func (d *decoder) readValue(thriftType byte, rf reflect.Value) {
 			et, n, err := d.r.ReadSetBegin()
 			if err != nil {
 				d.error(err)
+			}
+			if d.decodeEmptySlices && n == 0 {
+				v.Set(reflect.MakeSlice(v.Type(), n, n))
 			}
 			for i := 0; i < n; i++ {
 				val := reflect.New(elemType)

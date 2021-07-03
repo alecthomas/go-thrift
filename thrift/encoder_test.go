@@ -69,6 +69,11 @@ type TestStruct struct {
 	Duration time.Duration       `thrift:"14"`
 }
 
+type TestStruct3 struct {
+	List     []string            `thrift:"1"`
+	Set      []string            `thrift:"2,set"`
+}
+
 type TestStructRequiredOptional struct {
 	RequiredPtr *string `thrift:"1,required"`
 	Required    string  `thrift:"2,required"`
@@ -169,6 +174,29 @@ func TestBasics(t *testing.T) {
 
 	// Make sure map[string]bool regards a false value as not-belonging to the set
 	delete(s.Set3, "p")
+
+	if !reflect.DeepEqual(s, s2) {
+		t.Fatalf("encdec doesn't match: %+v != %+v", s, s2)
+	}
+}
+
+func TestBasicsWithEmptySlices(t *testing.T) {
+	s := &TestStruct3{
+		[]string{},
+		[]string{},
+	}
+	buf := &bytes.Buffer{}
+
+	err := EncodeStruct(NewBinaryProtocolWriter(buf, true), s)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s2 := &TestStruct3{}
+	err = DecodeStructWithEmptySlices(NewBinaryProtocolReader(buf, false), s2)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if !reflect.DeepEqual(s, s2) {
 		t.Fatalf("encdec doesn't match: %+v != %+v", s, s2)
